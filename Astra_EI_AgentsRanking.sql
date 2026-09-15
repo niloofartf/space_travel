@@ -1,9 +1,6 @@
 select 
 
 
---ah.customername,
---ah.communicationmethod,
---ah.leadsource,
 s.agentid,
 ta.firstname,
 ta.lastname,
@@ -12,10 +9,7 @@ ta.jobtitle,
 ta.spacelicensenumber,
 ta.yearsofservice,
 ta.averagecustomerservicerating,
---b.destination,
---b.launchlocation,
---b.bookingcompletedate,
---b.bookingstatus,
+
 
 s.total_assignments,
 s.overall_success_rate,
@@ -41,7 +35,8 @@ s.channel_success_rate,
     + COALESCE(s.channel_success_rate, 0)*0.1
  
     -- 5% Years of Service
-    + COALESCE(LEAST(SAFE_DIVIDE(ta.yearsofservice, 10), 1)*100,0)*0.05
+    + COALESCE(
+    SAFE_DIVIDE(ta.yearsofservice - MIN(ta.yearsofservice) OVER (),MAX(ta.yearsofservice) OVER () - MIN(ta.yearsofservice) OVER ())*100,0)*0.05
 ) AS match_score
 
 
@@ -121,3 +116,6 @@ LEFT JOIN bookings b ON ah.assignmentid = b.assignmentid
 GROUP BY ah.agentid
 ) s--stats
 ON ta.agentid = s.agentid
+
+
+ORDER by match_score desc
