@@ -17,7 +17,32 @@ ta.averagecustomerservicerating,
 --b.bookingcompletedate,
 --b.bookingstatus,
 
+s.total_assignments,
+s.overall_success_rate,
+s.overall_avg_revenue,
+s.route_assignments,
+s.route_success_rate,
+s.route_avg_revenue,
+s.channel_assignments,
+s.channel_success_rate,
 
+--100% match_score = 40% route success + 25% customer rate + 20% revenue perofrmance + 10% channel success + 5% years of service
+(
+    -- 40% Route Success
+    COALESCE(s.route_success_rate, 0) * 0.4
+ 
+    -- 25% Customer Service Rating
+    + COALESCE(SAFE_DIVIDE(ta.averagecustomerservicerating, 5)*100,0)*0.25 --scaling
+ 
+    -- 20% Revenue Performance
+    + COALESCE(SAFE_DIVIDE(s.route_avg_revenue, s.overall_avg_revenue)*100,0)*0.20
+ 
+    -- 10% Channel Success
+    + COALESCE(s.channel_success_rate, 0)*0.1
+ 
+    -- 5% Years of Service
+    + COALESCE(LEAST(SAFE_DIVIDE(ta.yearsofservice, 10), 1)*100,0)*0.05
+) AS match_score
 
 
 
